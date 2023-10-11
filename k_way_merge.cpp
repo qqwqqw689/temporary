@@ -10,9 +10,9 @@
 
 void GenerateRandNum(int n, std::fstream& of);
 // clear the content of disk1.txt
-void ClearFile1(std::fstream& of);
+void ClearFile1();
 // clear the content of disk2.txt
-void ClearFile2(std::fstream& of);
+void ClearFile2();
 // get the a specific element in disk1.txt
 template <class T>
 T GetFileElement(int pos);
@@ -113,7 +113,7 @@ void KMergeSort<T>::DivideAndSort()
     }
     file1.close();
     file2.close();
-    ClearFile1(file1);
+    ClearFile1();
     file1.open("C:\\Users\\Lenovo\\projects\\cpp\\disk1.txt", std::fstream::in | std::fstream::out);
     file2.open("C:\\Users\\Lenovo\\projects\\cpp\\disk2.txt", std::fstream::in | std::fstream::out);
     for(int i=0; i<_n; i++)
@@ -124,20 +124,14 @@ void KMergeSort<T>::DivideAndSort()
     }
     file1.close();
     file2.close();
-    ClearFile2(file2);
+    ClearFile2();
 }
 
 // sort the data
 template <class T>
 KMergeSort<T>::Sort()
 {
-    std::fstream file1("C:\\Users\\Lenovo\\projects\\cpp\\disk1.txt", std::fstream::in | std::fstream::out);
-    if(!file1.is_open())
-    {
-        std::cerr << "Error!! The file didn't open.";
-        exit(1);
-    }
-
+    DivideAndSort();
     std::fstream file2("C:\\Users\\Lenovo\\projects\\cpp\\disk2.txt", std::fstream::in | std::fstream::out);
     if(!file2.is_open())
     {
@@ -208,7 +202,26 @@ KMergeSort<T>::Sort()
                     break;
             }
         }
+        file2.close();
 
+        ClearFile1();
+        std::fstream file1("C:\\Users\\Lenovo\\projects\\cpp\\disk1.txt", std::fstream::in | std::fstream::out);
+        if(!file1.is_open())
+        {
+            std::cerr << "Error!! The file didn't open.";
+            exit(1);
+        }
+        
+        file2.open("C:\\Users\\Lenovo\\projects\\cpp\\disk2.txt", std::fstream::in | std::fstream::out);
+
+        T temp;
+        for(int i=0; i<_n; i++)
+        {
+            file2>>temp;
+            temp>>file1;
+        }
+        file2.close();
+        clearfile2();
     }
 }
 
@@ -250,16 +263,16 @@ void GenerateRandNum(int n, std::fstream& of)
 
 
 
-void ClearFile1(std::fstream& of)
+void ClearFile1()
 {
-    of.open("C:\\Users\\Lenovo\\projects\\cpp\\disk1.txt", std::fstream::out | std::fstream::trunc);
-    of.close();
+    std::fstream file1("C:\\Users\\Lenovo\\projects\\cpp\\disk1.txt", std::fstream::out | std::fstream::trunc);
+    file1.close();
 }
 
-void ClearFile2(std::fstream& of)
+void ClearFile2()
 {
-    of.open("C:\\Users\\Lenovo\\projects\\cpp\\disk2.txt", std::fstream::out | std::fstream::trunc);
-    of.close();
+    std::fstream file2("C:\\Users\\Lenovo\\projects\\cpp\\disk1.txt", std::fstream::out | std::fstream::trunc);
+    file2.close();
 }
 
 template <class T>
@@ -271,7 +284,7 @@ T GetFileElement(int pos)
     {
         file1>>ret;
     }
-    file1.open();
+    file1.close();
 
     return ret;
 }
