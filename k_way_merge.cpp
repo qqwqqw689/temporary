@@ -5,6 +5,8 @@
 #include <cmath>
 #include <vector>
 #include <algorithm>
+#include <utility>
+#include <limits>
 
 void GenerateRandNum(int n, std::fstream& of);
 // clear the content of disk1.txt
@@ -29,7 +31,7 @@ private:
     // drives the creation of sorted sub-files stored on disk.
     void DivideAndSort();
 public:
-
+    void Sort();
 };
 
 // destructor
@@ -125,7 +127,90 @@ void KMergeSort<T>::DivideAndSort()
     ClearFile2(file2);
 }
 
+// sort the data
+template <class T>
+KMergeSort<T>::Sort()
+{
+    std::fstream file1("C:\\Users\\Lenovo\\projects\\cpp\\disk1.txt", std::fstream::in | std::fstream::out);
+    if(!file1.is_open())
+    {
+        std::cerr << "Error!! The file didn't open.";
+        exit(1);
+    }
 
+    std::fstream file2("C:\\Users\\Lenovo\\projects\\cpp\\disk2.txt", std::fstream::in | std::fstream::out);
+    if(!file2.is_open())
+    {
+        std::cerr << "Error!! The file didn't open.";
+        exit(1);
+    }
+
+    _current_pass = 1;
+
+    std::vector<std::pair<int,int>> index(_k);
+    // (the index of the current element, the number of remaining elements)
+
+    for(;; _current_pass++)
+    {
+        int capacity = _BufferSize*_k**(_current_pass-1);
+        if(capacity>_n)
+            break;
+        int real_capacity; // the real number of element in a branch.
+        // Elements that need to be arranged for each branch
+        int come_to_end = 1; // if current pass have come to the end.
+        int total_num = _n;
+        int how_many_pairs; // the index of the last valid pairs in index(vector).
+        while(come_to_end)
+        {
+            for(int i=0; i<_k; i++)
+            {
+                if(total_num >= capacity)
+                {
+                    real_capacity = capacity;
+                    index[i].second = real_capacity;
+                    index[i].first = _n - total_num;
+                    total_num -= real_capacity;
+                    how_many_pairs = i;
+                }
+                else
+                {
+                    real_capacity = total_num;
+                    index[i].second = real_capacity;
+                    index[i].first = _n - total_num;
+                    total_num -= real_capacity;
+                    come_to_end = 0; // current pass have come to the end.
+                    how_many_pairs = i;
+                    break;
+                }
+            }
+            while(1)
+            {
+                int min_num_index;
+                T min_num = std::numeric_limits<T>::lowest();
+                for(int i=0; i<=how_many_pairs; i++)
+                {
+                    if(index[i].second!=0 && GetFileElement(index[i].first) < min_num)
+                    {
+                        min_num = GetFileElement(index[i].first);
+                        min_num_index = i;
+                    }
+                }
+                file2 << min_num;
+                index[min_num_index].first++;
+                index[min_num_index].second--;
+                int all_empty = 1; // if all the branchs is empty.
+                for(int i=1; i<=how_many_pairs; i++)
+                {
+                    if(index[i].second!=0)
+                        all_empty = 0;
+                }
+                if(all_empty==1)
+                    break;
+            }
+        }
+
+    }
+}
 
 int main()
 {
